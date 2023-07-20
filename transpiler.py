@@ -27,6 +27,7 @@ class FreeLangTranspiler:
         args = line.split(" ")
         cmd = args[0]
         args.pop(0)
+        if cmd.startswith("#") or cmd.startswith("//") or cmd.startswith("--"): return
         if cmd == "PRINT":
             text = ""
             for i in args: 
@@ -74,5 +75,8 @@ class FreeLangTranspiler:
             translated_code += self.tabs+f"while True:"+"\n"
             self.tabs += "    "
         elif cmd == "END":
-            s_obj = slice(0, 4)
-            print(self.tabs[s_obj])
+            try:
+                s_obj = slice(0, 4)
+                #print(self.tabs[s_obj])
+            except:
+                pass
