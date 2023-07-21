@@ -2,8 +2,8 @@ from transpiler import *
 from sys import argv
 
 if len(argv) < 2:
-    tp = FreeLangTranspiler()
+    tp = FreeLangPyTranspiler()
 else:
-    tp = FreeLangTranspiler(argv[2])
+    tp = FreeLangPyTranspiler(argv[1])
 code = tp.translate_code()
 tp.run_code()

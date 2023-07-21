@@ -1,7 +1,7 @@
 import sys
-translated_code = """"""
+translated_code = """import sys, math\n"""
 
-class FreeLangTranspiler:
+class FreeLangPyTranspiler:
     def __init__(self, filename="main.free"):
         global translated_code
         self.filename = filename
@@ -9,7 +9,9 @@ class FreeLangTranspiler:
         f = open(self.filename)
         c = f.readlines()
         self.code = []
-        for i in c: self.code.append(i.removesuffix("\n"))
+        for i in c:
+            if i != "":
+                self.code.append(i.removesuffix("\n"))
         self.PC = 0
     
     def run_code(self):
@@ -25,9 +27,9 @@ class FreeLangTranspiler:
     def execute_command(self, line):
         global translated_code
         args = line.split(" ")
-        cmd = args[0]
-        args.pop(0)
+        cmd = args.pop(0)
         if cmd.startswith("#") or cmd.startswith("//") or cmd.startswith("--"): return
+        if line.replace(" ", "") == "": return
         if cmd == "PRINT":
             text = ""
             for i in args: 
@@ -40,11 +42,37 @@ class FreeLangTranspiler:
         elif cmd == "VAR":
             if args[0] == "INT":
                 var = args[2].removesuffix("-FREE")
-                translated_code += self.tabs+f"{args[1]} = {var}"+"\n"
+                translated_code += self.tabs+f"{args[1]} = int({var})"+"\n"
             elif args[0] == "STR":
                 var = ""
                 for i in args[2:]: var += i+" "
-                translated_code += self.tabs+f"{args[1]} = '{args[2]}'"+"\n"
+                translated_code += self.tabs+f"{args[1]} = str('{args[2]}')"+"\n"
+        elif cmd == "ADD":
+            args[0] = args[0].removeprefix("VAR:")
+            if args[1].endswith("-FREE"):
+                args[1] = args[1].removesuffix("-FREE")
+                translated_code += self.tabs+f"{args[0]} += {args[1]}"+"\n"
+            else:
+                translated_code += self.tabs+f"{args[0]} += '{args[1]}'"+"\n"
+        elif cmd == "SUB":
+            args[0] = args[0].removeprefix("VAR:")
+            args[1] = args[1].removesuffix("-FREE")
+            translated_code += self.tabs+f"{args[0]} -= {args[1]}"+"\n"
+        elif cmd == "MUL":
+            args[0] = args[0].removeprefix("VAR:")
+            args[1] = args[1].removesuffix("-FREE")
+            translated_code += self.tabs+f"{args[0]} *= {args[1]}"+"\n"
+        elif cmd == "DIV":
+            args[0] = args[0].removeprefix("VAR:")
+            args[1] = args[1].removesuffix("-FREE")
+            translated_code += self.tabs+f"{args[0]} /= {args[1]}"+"\n"
+        elif cmd == "POW":
+            args[0] = args[0].removeprefix("VAR:")
+            args[1] = args[1].removesuffix("-FREE")
+            translated_code += self.tabs+f"{args[0]} **= {args[1]}"+"\n"
+        elif cmd == "SQRT":
+            args[0] = args[0].removeprefix("VAR:")
+            translated_code += self.tabs+f"{args[0]} = math.sqrt({args[0]})"+"\n"
         elif cmd == "IF":
             if args[0].startswith("VAR:"): args[0] = args[0].removeprefix("VAR:")
             if args[0].endswith("-FREE"): args[0] = args[0].removesuffix("-FREE")
@@ -80,3 +108,7 @@ class FreeLangTranspiler:
                 #print(self.tabs[s_obj])
             except:
                 pass
+        elif cmd == "QUIT":
+            translated_code += self.tabs+f"sys.exit()"+"\n"
+        else:
+            raise SyntaxError("Command not found")
