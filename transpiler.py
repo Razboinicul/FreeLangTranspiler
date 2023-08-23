@@ -35,7 +35,11 @@ class FreeLangPyTranspiler:
             for i in args: 
                 if i.startswith("VAR:"):
                     i = i.removeprefix("VAR:")
-                    text += f"{i}"+","
+                    if "::" in i:
+                        x = i.split("::")
+                        text += f"{x[0]}[{x[1]}]"+","
+                    else:
+                        text += f"{i}"+","
                 else:
                     text += f"'{i}'"+","
             translated_code += self.tabs+f"print({text})"+"\n"
@@ -46,7 +50,19 @@ class FreeLangPyTranspiler:
             elif args[0] == "STR":
                 var = ""
                 for i in args[2:]: var += i+" "
-                translated_code += self.tabs+f"{args[1]} = str('{args[2]}')"+"\n"
+                translated_code += self.tabs+f"{args[1]} = str('{var}')"+"\n"
+            elif args[0] == "LIST":
+                var = "["
+                for i in args[2:]: var += i+","
+                else:
+                    var = var.removesuffix(",")
+                    var += "]"
+                translated_code += self.tabs+f"{args[1]} = {var}"+"\n"
+            elif args[0] == "LIST_OBJECT":
+                var = ""
+                x = args[1].split("::")
+                for i in args[2:]: var += i+" "
+                translated_code += self.tabs+f"{x[0]}.append({var})"+"\n"
         elif cmd == "ADD":
             args[0] = args[0].removeprefix("VAR:")
             if args[1].endswith("-FREE"):
@@ -108,6 +124,11 @@ class FreeLangPyTranspiler:
                 #print(self.tabs[s_obj])
             except:
                 pass
+        elif cmd == "SET":
+            var = ""
+            x = args[0].split("::")
+            for i in args[1:]: var += i+" "
+            translated_code += self.tabs+f"{x[0]}[{x[1]}] = {var}"+"\n"
         elif cmd == "QUIT":
             translated_code += self.tabs+f"sys.exit()"+"\n"
         else:
